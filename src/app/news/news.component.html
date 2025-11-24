@@ -1,0 +1,58 @@
+<div class="news-container">
+  <h1>News Verification</h1>
+
+  <div class="source-selector">
+    <label for="newsSource">Select News Source:</label>
+    <select id="newsSource" [(ngModel)]="selectedSource" (change)="onSourceChange()" class="source-select">
+      <option *ngFor="let source of sources" [value]="source.value">{{ source.label }}</option>
+    </select>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div class="news-list" *ngIf="!loading && !error">
+    <div class="news-item" *ngFor="let item of newsItems">
+      <div class="news-content">
+        <div class="news-header">
+          <h3>{{ item.title }}</h3>
+          <span class="source-badge" *ngIf="item.source">{{ item.source }}</span>
+        </div>
+        <p class="description">{{ item.description }}</p>
+        <p class="date">Published: {{ item.pubDate | date:'medium' }}</p>
+        <a [href]="item.link" target="_blank" class="source-link">Read on {{ item.source || (selectedSource === 'bbc' ? 'BBC' : 'NBC New York') }}</a>
+      </div>
+
+      <button 
+        class="verify-btn" 
+        (click)="verifyNews(item.title)"
+        [disabled]="loading">
+        Verify
+      </button>
+
+      <div *ngIf="hasVerificationResult(item.title)" class="verification-result">
+        <div class="result-header">
+          <h4>Verification Result</h4>
+          <div class="credibility-score" [class.high]="getVerificationResult(item.title)!.credibility >= 70"
+               [class.medium]="getVerificationResult(item.title)!.credibility >= 50 && getVerificationResult(item.title)!.credibility < 70"
+               [class.low]="getVerificationResult(item.title)!.credibility < 50">
+            Credibility: {{ getVerificationResult(item.title)!.credibility }}%
+          </div>
+        </div>
+        
+        <div class="wiki-content" *ngIf="getVerificationResult(item.title)!.wiki.extract">
+          <p><strong>Wikipedia Extract:</strong></p>
+          <p>{{ getVerificationResult(item.title)!.wiki.extract }}</p>
+        </div>
+
+        <a 
+          [href]="getWikiLink(getVerificationResult(item.title)!)" 
+          target="_blank" 
+          class="wiki-link">
+          View on Wikipedia
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
